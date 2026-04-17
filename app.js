@@ -607,8 +607,5 @@ window.onclick = function(event) {
  * Função executada quando a página carrega
  */
 window.onload = function() {
-    console.log('Cliente CRUDEPatients iniciado');
-    console.log('Conectando ao servidor:', API_URL);
-    console.log('Padrão FHIR v5.0.0 - Template completo implementado');
     loadPatients();
 };
