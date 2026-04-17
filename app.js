@@ -7,18 +7,22 @@ let currentPatientId = null;
 /**
  * Alterna entre as abas do formulário
  */
-function switchTab(tabName) {
-    // Remover classe active de todas as abas
+
+function $(id) {
+    return document.getElementById(id);
+}
+
+function switchTab(event, tabName) {
     document.querySelectorAll('.tab-button').forEach(btn => {
         btn.classList.remove('active');
     });
+
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
     });
 
-    // Ativar aba selecionada
     event.target.classList.add('active');
-    document.getElementById(tab-${tabName}).classList.add('active');
+    $(`tab-${tabName}`).classList.add('active');
 }
 
 /**
