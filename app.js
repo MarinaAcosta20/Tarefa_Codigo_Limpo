@@ -7,18 +7,22 @@ let currentPatientId = null;
 /**
  * Alterna entre as abas do formulário
  */
-function switchTab(tabName) {
-    // Remover classe active de todas as abas
+
+function $(id) {
+    return document.getElementById(id);
+}
+
+function switchTab(event, tabName) {
     document.querySelectorAll('.tab-button').forEach(btn => {
         btn.classList.remove('active');
     });
+
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
     });
 
-    // Ativar aba selecionada
     event.target.classList.add('active');
-    document.getElementById(tab-${tabName}).classList.add('active');
+    $(`tab-${tabName}`).classList.add('active');
 }
 
 /**
@@ -64,10 +68,8 @@ async function loadPatient(id) {
         document.getElementById('patientForm').style.display = 'block';
         document.getElementById('deleteBtn').style.display = 'block';
 
-        // Preencher formulário com dados do paciente
         fillForm(patient);
 
-        // Marcar item ativo na lista
         updateActivePatientInList();
 
     } catch (error) {
@@ -80,19 +82,16 @@ async function loadPatient(id) {
  */
 async function savePatient() {
     try {
-        // Validar campos obrigatórios
         const validation = validateForm();
         if (!validation.valid) {
             showAlert(validation.message, 'danger');
             return;
         }
 
-        // Criar objeto Patient conforme FHIR v5.0.0
         const patient = buildPatientObject();
 
         let response;
         if (currentPatientId) {
-            // UPDATE - atualizar paciente existente
             patient.identifier = [{
                 system: "http://patientsonfire.example.com/patient-id",
                 value: currentPatientId.toString()
@@ -103,7 +102,6 @@ async function savePatient() {
                 body: JSON.stringify(patient)
             });
         } else {
-            // CREATE - criar novo paciente
             response = await fetch(${API_URL}/Patient, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -168,15 +166,11 @@ function newPatient() {
     document.getElementById('patientForm').style.display = 'block';
     document.getElementById('deleteBtn').style.display = 'none';
     
-    // Limpar formulário
     clearForm();
-
-    // Remover seleção ativa
     document.querySelectorAll('.patient-item').forEach(item => {
         item.classList.remove('active');
     });
 
-    // Voltar para primeira aba
     switchTabProgrammatically('basic');
 }
 
@@ -213,19 +207,15 @@ function buildPatientObject() {
         patient.active = active;
     }
 
-    // Name (obrigatório)
     patient.name = [{
         given: document.getElementById('givenName').value.trim().split(' '),
         family: document.getElementById('familyName').value.trim()
     }];
 
-    // Gender (obrigatório)
     patient.gender = document.getElementById('gender').value;
 
-    // BirthDate (obrigatório)
     patient.birthDate = document.getElementById('birthDate').value;
 
-    // Deceased
     const deceasedBoolean = document.getElementById('deceasedBoolean').checked;
     const deceasedDateTime = document.getElementById('deceasedDateTime').value;
     
@@ -235,7 +225,6 @@ function buildPatientObject() {
         patient.deceasedBoolean = true;
     }
 
-    // Marital Status
     const maritalStatus = document.getElementById('maritalStatus').value;
     if (maritalStatus) {
         patient.maritalStatus = {
@@ -246,13 +235,11 @@ function buildPatientObject() {
         };
     }
 
-    // Multiple Birth
     const multipleBirthInteger = document.getElementById('multipleBirthInteger').value;
     if (multipleBirthInteger) {
         patient.multipleBirthInteger = parseInt(multipleBirthInteger);
     }
 
-    // Telecom (telefone e email)
     patient.telecom = [];
     const phone = document.getElementById('phone').value.trim();
     if (phone) {
@@ -272,7 +259,6 @@ function buildPatientObject() {
         });
     }
 
-    // Address
     const addressLine = document.getElementById('addressLine').value.trim();
     const addressCity = document.getElementById('addressCity').value.trim();
     const addressState = document.getElementById('addressState').value.trim();
@@ -290,7 +276,6 @@ function buildPatientObject() {
         }];
     }
 
-    // Photo
     const photoUrl = document.getElementById('photoUrl').value.trim();
     if (photoUrl) {
         patient.photo = [{
@@ -298,7 +283,6 @@ function buildPatientObject() {
         }];
     }
 
-    // Contact (contato de emergência)
     const contactName = document.getElementById('contactName').value.trim();
     const contactRelationship = document.getElementById('contactRelationship').value;
     const contactPhone = document.getElementById('contactPhone').value.trim();
@@ -323,7 +307,6 @@ function buildPatientObject() {
         }];
     }
 
-    // Communication
     const language = document.getElementById('language').value;
     const languagePreferred = document.getElementById('languagePreferred').checked;
 
@@ -339,7 +322,6 @@ function buildPatientObject() {
         }];
     }
 
-    // General Practitioner
     const generalPractitioner = document.getElementById('generalPractitioner').value.trim();
     if (generalPractitioner) {
         patient.generalPractitioner = [{
@@ -347,7 +329,6 @@ function buildPatientObject() {
         }];
     }
 
-    // Managing Organization
     const managingOrganization = document.getElementById('managingOrganization').value.trim();
     if (managingOrganization) {
         patient.managingOrganization = {
@@ -362,10 +343,8 @@ function buildPatientObject() {
  * Preenche o formulário com dados do paciente
  */
 function fillForm(patient) {
-    // Active
     document.getElementById('active').checked = patient.active !== false;
 
-    // Name
     if (patient.name && patient.name[0]) {
         document.getElementById('givenName').value = 
             patient.name[0].given ? patient.name[0].given.join(' ') : '';
@@ -373,11 +352,9 @@ function fillForm(patient) {
             patient.name[0].family || '';
     }
 
-    // Gender e Birth Date
     document.getElementById('gender').value = patient.gender || '';
     document.getElementById('birthDate').value = patient.birthDate || '';
 
-    // Deceased
     if (patient.deceasedBoolean) {
         document.getElementById('deceasedBoolean').checked = true;
     }
@@ -385,17 +362,14 @@ function fillForm(patient) {
         document.getElementById('deceasedDateTime').value = patient.deceasedDateTime;
     }
 
-    // Marital Status
     if (patient.maritalStatus && patient.maritalStatus.coding && patient.maritalStatus.coding[0]) {
         document.getElementById('maritalStatus').value = patient.maritalStatus.coding[0].code || '';
     }
 
-    // Multiple Birth
     if (patient.multipleBirthInteger) {
         document.getElementById('multipleBirthInteger').value = patient.multipleBirthInteger;
     }
 
-    // Telecom
     if (patient.telecom) {
         const phone = patient.telecom.find(t => t.system === 'phone');
         const email = patient.telecom.find(t => t.system === 'email');
@@ -403,7 +377,6 @@ function fillForm(patient) {
         document.getElementById('email').value = email ? email.value : '';
     }
 
-    // Address
     if (patient.address && patient.address[0]) {
         const addr = patient.address[0];
         document.getElementById('addressLine').value = addr.line ? addr.line.join(', ') : '';
@@ -413,12 +386,10 @@ function fillForm(patient) {
         document.getElementById('addressCountry').value = addr.country || '';
     }
 
-    // Photo
     if (patient.photo && patient.photo[0] && patient.photo[0].url) {
         document.getElementById('photoUrl').value = patient.photo[0].url;
     }
 
-    // Contact
     if (patient.contact && patient.contact[0]) {
         const contact = patient.contact[0];
         
@@ -439,7 +410,6 @@ function fillForm(patient) {
         }
     }
 
-    // Communication
     if (patient.communication && patient.communication[0]) {
         const comm = patient.communication[0];
         if (comm.language && comm.language.coding && comm.language.coding[0]) {
@@ -448,12 +418,10 @@ function fillForm(patient) {
         document.getElementById('languagePreferred').checked = comm.preferred || false;
     }
 
-    // General Practitioner
     if (patient.generalPractitioner && patient.generalPractitioner[0]) {
         document.getElementById('generalPractitioner').value = patient.generalPractitioner[0].display || '';
     }
 
-    // Managing Organization
     if (patient.managingOrganization) {
         document.getElementById('managingOrganization').value = patient.managingOrganization.display || '';
     }
@@ -546,9 +514,7 @@ function switchTabProgrammatically(tabName) {
 function showAlert(message, type) {
     const alertContainer = document.getElementById('alertContainer');
     alertContainer.innerHTML = <div class="alert alert-${type}">${message}</div>;
-    
-    // Remover alerta após 5 segundos
-    setTimeout(() => {
+        setTimeout(() => {
         alertContainer.innerHTML = '';
     }, 5000);
 }
@@ -592,7 +558,6 @@ function closeModal() {
     document.getElementById('jsonModal').style.display = 'none';
 }
 
-// Fechar modal ao clicar fora dele
 window.onclick = function(event) {
     const modal = document.getElementById('jsonModal');
     if (event.target === modal) {
@@ -603,8 +568,5 @@ window.onclick = function(event) {
  * Função executada quando a página carrega
  */
 window.onload = function() {
-    console.log('Cliente CRUDEPatients iniciado');
-    console.log('Conectando ao servidor:', API_URL);
-    console.log('Padrão FHIR v5.0.0 - Template completo implementado');
     loadPatients();
 };
